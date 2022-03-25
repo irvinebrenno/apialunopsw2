@@ -6,7 +6,7 @@ type Login struct {
 }
 
 type EstruturaAluno struct {
-	ID        int64  `json:"id" binding:"required"`
+	ID        int64  `json:"id"`
 	Nome      string `json:"nome" binding:"required"`
 	Matricula string `json:"matricula" binding:"required"`
 	Idade     int64  `json:"idade" binding:"required"`
