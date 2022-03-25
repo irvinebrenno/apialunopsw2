@@ -1,6 +1,8 @@
 package aluno
 
 import (
+	dbpostgres "apiAluno/data"
+	modelos "apiAluno/model"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -18,9 +20,8 @@ func Router(r *gin.RouterGroup) {
 }
 
 func listarAlunos(c *gin.Context) {
-	c.JSON(200, gin.H{
-		"message": "aluno 1",
-	})
+	alunos := dbpostgres.ListarAlunos()
+	c.JSON(200, alunos)
 }
 
 func buscarAluno(c *gin.Context) {
@@ -28,13 +29,13 @@ func buscarAluno(c *gin.Context) {
 	if err != nil {
 		return
 	}
-	var res EstruturaAluno
+	var res modelos.EstruturaAluno
 	res.ID = alunoID
 	c.JSON(200, res)
 }
 
 func logar(c *gin.Context) {
-	var json Login
+	var json modelos.Login
 	if err := c.ShouldBindJSON(&json); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -51,7 +52,7 @@ func logar(c *gin.Context) {
 }
 
 func adicionarAluno(c *gin.Context) {
-	var req EstruturaAluno
+	var req modelos.EstruturaAluno
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -69,17 +70,4 @@ func deletarAluno(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"message": "aluno 1",
 	})
-}
-
-type Login struct {
-	User     string `json:"user" binding:"required"`
-	Password string `json:"password" binding:"required"`
-}
-
-type EstruturaAluno struct {
-	ID        int64  `json:"id" binding:"required"`
-	Nome      string `json:"nome" binding:"required"`
-	Matricula string `json:"matricula" binding:"required"`
-	Idade     int64  `json:"idade" binding:"required"`
-	Curso     string `json:"curso" binding:"required"`
 }
