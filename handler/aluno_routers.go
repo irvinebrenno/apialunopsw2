@@ -1,9 +1,8 @@
-package aluno
+package handler
 
 import (
 	dbpostgres "apiAluno/data"
 	modelos "apiAluno/model"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -14,7 +13,6 @@ import (
 func Router(r *gin.RouterGroup) {
 	r.GET("", listarAlunos)
 	r.POST("", adicionarAluno)
-	r.POST("/logar", logar)
 	r.GET("/:aluno_id", buscarAluno)
 	r.PUT("/:aluno_id", editarAluno)
 	r.DELETE("/:aluno_id", deletarAluno)
@@ -22,47 +20,38 @@ func Router(r *gin.RouterGroup) {
 
 // handler para listagem de alunos
 func listarAlunos(c *gin.Context) {
-	alunos := dbpostgres.ListarAlunos()
+	alunos, err := dbpostgres.ListarAlunos()
+	if err != nil {
+		c.JSON(400, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
 	c.JSON(200, alunos)
 }
 
 // handler para buscar aluno pelo id
 func buscarAluno(c *gin.Context) {
-	statusHttp := http.StatusOK
-
 	alunoID, err := strconv.ParseInt(c.Param("aluno_id"), 10, 64)
 	if err != nil {
+		c.JSON(400, gin.H{
+			"error": err,
+		})
 		return
 	}
 
 	aluno, err := dbpostgres.BuscarAluno(alunoID)
-	if err != nil || aluno == nil {
-		statusHttp = http.StatusBadRequest
-	}
-	c.JSON(statusHttp, aluno)
-}
-
-// handler para login
-func logar(c *gin.Context) {
-	var json modelos.Login
-	if err := c.ShouldBindJSON(&json); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err != nil {
+		c.JSON(400, gin.H{
+			"error": err,
+		})
 		return
 	}
-
-	if json.User != "manu" || json.Password != "123" {
-		c.JSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
-		return
-	}
-
-	fmt.Println(json)
-
-	c.JSON(http.StatusOK, gin.H{"status": "you are logged in"})
+	c.JSON(200, aluno)
 }
 
 // handler para adicionar um aluno
 func adicionarAluno(c *gin.Context) {
-	statusHttp := http.StatusNoContent
 	var req modelos.EstruturaAluno
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -72,15 +61,17 @@ func adicionarAluno(c *gin.Context) {
 
 	err := dbpostgres.AdicionarAluno(req)
 	if err != nil {
-		statusHttp = http.StatusBadRequest
+		c.JSON(400, gin.H{
+			"error": err,
+		})
+		return
 	}
 
-	c.JSON(statusHttp, nil)
+	c.JSON(201, nil)
 }
 
 // handler para editar um aluno
 func editarAluno(c *gin.Context) {
-	statusHttp := http.StatusNoContent
 	var req modelos.EstruturaAluno
 
 	alunoID, err := strconv.ParseInt(c.Param("aluno_id"), 10, 64)
@@ -97,24 +88,32 @@ func editarAluno(c *gin.Context) {
 
 	err = dbpostgres.EditarAluno(req)
 	if err != nil {
-		statusHttp = http.StatusBadRequest
+		c.JSON(400, gin.H{
+			"error": err,
+		})
+		return
 	}
 
-	c.JSON(statusHttp, nil)
+	c.JSON(201, nil)
 }
 
 // handler para deletar um aluno
 func deletarAluno(c *gin.Context) {
-	statusHttp := http.StatusNoContent
 	alunoID, err := strconv.ParseInt(c.Param("aluno_id"), 10, 64)
 	if err != nil {
+		c.JSON(400, gin.H{
+			"error": err,
+		})
 		return
 	}
 
 	err = dbpostgres.DeletarAluno(alunoID)
 	if err != nil {
-		statusHttp = http.StatusBadRequest
+		c.JSON(400, gin.H{
+			"error": err,
+		})
+		return
 	}
 
-	c.JSON(statusHttp, nil)
+	c.JSON(201, nil)
 }

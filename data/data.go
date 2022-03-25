@@ -4,7 +4,6 @@ import (
 	modelos "apiAluno/model"
 	"database/sql"
 	"fmt"
-	"log"
 
 	_ "github.com/lib/pq"
 )
@@ -37,8 +36,9 @@ func conectar() *sql.DB {
 }
 
 // lista alunos contidos no bando de dados postgres
-func ListarAlunos() (alunos []modelos.EstruturaAluno) {
+func ListarAlunos() (alunos []modelos.EstruturaAluno, err error) {
 	db := conectar()
+	defer db.Close()
 	var aluno modelos.EstruturaAluno
 
 	rows, err := db.
@@ -51,11 +51,14 @@ func ListarAlunos() (alunos []modelos.EstruturaAluno) {
 				ta.curso
 			FROM t_aluno ta`)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	for rows.Next() {
-		rows.Scan(&aluno.ID, &aluno.Nome, &aluno.Idade, &aluno.Matricula, &aluno.Curso)
+		err = rows.Scan(&aluno.ID, &aluno.Nome, &aluno.Idade, &aluno.Matricula, &aluno.Curso)
+		if err != nil {
+			return nil, err
+		}
 		alunos = append(alunos, aluno)
 	}
 
@@ -65,6 +68,7 @@ func ListarAlunos() (alunos []modelos.EstruturaAluno) {
 // busca alunos no banco de dados postgres
 func BuscarAluno(alunoID int64) (aluno *modelos.EstruturaAluno, err error) {
 	db := conectar()
+	defer db.Close()
 	aluno = new(modelos.EstruturaAluno)
 	if err = db.
 		QueryRow(`
@@ -82,6 +86,7 @@ func BuscarAluno(alunoID int64) (aluno *modelos.EstruturaAluno, err error) {
 		if err == sql.ErrNoRows {
 			return nil, nil
 		}
+		return nil, err
 	}
 
 	return
@@ -90,6 +95,7 @@ func BuscarAluno(alunoID int64) (aluno *modelos.EstruturaAluno, err error) {
 // adiciona alunos no bando de dados postgres
 func AdicionarAluno(aluno modelos.EstruturaAluno) (err error) {
 	db := conectar()
+	defer db.Close()
 	sqlStatement := `INSERT INTO public.t_aluno
 	(nome, matricula, idade, curso)
 	VALUES($1::TEXT, $2::TEXT, $3::BIGINT, $4::TEXT)`
@@ -104,6 +110,7 @@ func AdicionarAluno(aluno modelos.EstruturaAluno) (err error) {
 // deleta alunos no banco de dados postgres
 func DeletarAluno(alunoID int64) (err error) {
 	db := conectar()
+	defer db.Close()
 	sqlStatement := `DELETE FROM public.t_aluno
 	WHERE id=$1::BIGINT`
 	_, err = db.Exec(sqlStatement, alunoID)
@@ -124,6 +131,47 @@ func EditarAluno(aluno modelos.EstruturaAluno) (err error) {
 	if err != nil {
 		return err
 	}
+
+	return
+}
+
+// adiciona usuários no bando de dados postgres
+func AdicionarUsuario(user modelos.User) (err error) {
+	db := conectar()
+	defer db.Close()
+	sqlStatement := `INSERT INTO public.t_usuarios
+	(usuario, senha)
+	VALUES($1, $2)`
+	_, err = db.Exec(sqlStatement, user.Username, user.Senha)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	return
+}
+
+// obtém senha criptografada do usuário no banco
+func BuscarUsuario(userBusca modelos.User) (user *modelos.User, err error) {
+	db := conectar()
+	defer db.Close()
+	user = new(modelos.User)
+	if err = db.
+		QueryRow(`
+			SELECT
+				tu.id,
+				tu.usuario,
+				tu.senha
+			FROM t_usuarios tu
+			WHERE tu.usuario =$1`, userBusca.Username).
+		Scan(&user.ID, &user.Username, &user.Senha); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	fmt.Println(user)
 
 	return
 }

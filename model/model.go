@@ -1,8 +1,9 @@
 package modelos
 
-type Login struct {
-	User     string `json:"user" binding:"required"`
-	Password string `json:"password" binding:"required"`
+type User struct {
+	ID       int64
+	Senha    string `json:"password" validate:"required"`
+	Username string `json:"username"`
 }
 
 type EstruturaAluno struct {
