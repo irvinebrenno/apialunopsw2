@@ -67,7 +67,9 @@ func adicionarAluno(c *gin.Context) {
 		return
 	}
 
-	c.JSON(201, nil)
+	c.JSON(201, gin.H{
+		"Sucesso": "Aluno adicionado",
+	})
 }
 
 // handler para editar um aluno
@@ -94,7 +96,9 @@ func editarAluno(c *gin.Context) {
 		return
 	}
 
-	c.JSON(201, nil)
+	c.JSON(201, gin.H{
+		"Sucesso": "Aluno editado",
+	})
 }
 
 // handler para deletar um aluno
@@ -115,5 +119,7 @@ func deletarAluno(c *gin.Context) {
 		return
 	}
 
-	c.JSON(201, nil)
+	c.JSON(201, gin.H{
+		"Sucesso": "Aluno deletado",
+	})
 }

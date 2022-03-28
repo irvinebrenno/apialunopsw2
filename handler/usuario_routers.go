@@ -34,7 +34,9 @@ func adicionarUsuario(c *gin.Context) {
 		return
 	}
 
-	c.JSON(201, nil)
+	c.JSON(201, gin.H{
+		"Sucesso": "Usuário adicionado",
+	})
 }
 
 // faz login e retorna token
