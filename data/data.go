@@ -9,11 +9,11 @@ import (
 )
 
 const (
-	host     = "ec2-44-194-92-192.compute-1.amazonaws.com"
+	host     = "ec2-54-173-77-184.compute-1.amazonaws.com"
 	port     = 5432
-	user     = "cbwddrgknyovbl"
-	password = "d6e2c7033b945c6e0717a66337a9ce6d5229d57327edc5751b2e367a37161e1c"
-	dbname   = "d6n9egsujidc12"
+	user     = "aaiiammvzpolvz"
+	password = "afea01c8f848df0591ddef549a0f8b0410acac6655ced6e17780c3441fcab550"
+	dbname   = "de50i5dsk573pe"
 )
 
 // cria e retorna uma conexão com o bando de dados postgres
@@ -101,6 +101,7 @@ func AdicionarAluno(aluno modelos.EstruturaAluno) (err error) {
 	VALUES($1::TEXT, $2::TEXT, $3::BIGINT, $4::TEXT)`
 	_, err = db.Exec(sqlStatement, aluno.Nome, aluno.Matricula, aluno.Idade, aluno.Curso)
 	if err != nil {
+		fmt.Println("erro aqui: ", err)
 		return err
 	}
 
